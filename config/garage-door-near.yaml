@@ -1,0 +1,6 @@
+esphome:
+  name: near-garage-door
+  friendly_name: Near Garage Door
+
+packages:
+  base: !include packages/garage-door/base.yaml
