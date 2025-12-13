@@ -1,0 +1,11 @@
+substitutions:
+  name: workshop-heat-pump
+  area: Workshop
+  encryption_key: !secret workshop-heat-pump_encryption_key
+  ota_password: !secret workshop-heat-pump_ota_password
+
+packages:
+  base: !include packages/heat-pump/base.yaml
+  net: !include packages/heat-pump/net-wifi.yaml
+  source: !include packages/heat-pump/source-internal.yaml
+

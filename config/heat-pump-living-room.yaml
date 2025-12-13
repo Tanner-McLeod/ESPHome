@@ -1,0 +1,11 @@
+substitutions:
+  name: living-room-heat-pump
+  area: Living Room
+  encryption_key: !secret living-room-heat-pump_encryption_key
+  ota_password: !secret living-room-heat-pump_ota_password
+
+packages:
+  base: !include packages/heat-pump/base.yaml
+  net: !include packages/heat-pump/net-wifi.yaml
+  source: !include packages/heat-pump/source-internal.yaml
+

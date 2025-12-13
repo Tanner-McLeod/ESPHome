@@ -1,0 +1,16 @@
+substitutions:
+  name: loft-heat-pump
+  area: Loft
+  encryption_key: !secret loft-heat-pump_encryption_key
+  ota_password: !secret loft-heat-pump_ota_password
+
+packages:
+  base: !include packages/heat-pump/base.yaml
+  net: !include packages/heat-pump/net-wifi.yaml
+  temp: !include
+    file: packages/heat-pump/source-config.yaml
+    vars:
+      source:
+        name: "Office Sensor"
+        internal_id: office_temperature
+        entity_id: sensor.loft_office_sensor_temperature

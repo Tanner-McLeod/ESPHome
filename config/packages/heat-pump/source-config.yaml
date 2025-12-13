@@ -1,0 +1,25 @@
+select:
+  - platform: mitsubishi_itp
+    temperature_source:
+      name: "Temperature Source"
+      sources:
+      - ${source.internal_id}_heartbeat
+      - ${source.internal_id}_remote
+
+sensor:
+  - platform: homeassistant
+    id: "${source.internal_id}_remote"
+    name: "${source.name} (Direct)"
+    entity_id: "${source.entity_id}"
+    filters:
+      - lambda: return ((x - 32.0) * (5.0 / 9.0));
+
+  - platform: template
+    id: ${source.internal_id}_heartbeat
+    name: "${source.name} (Cached)"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    update_interval: 5min
+    lambda: |-
+      return id(${source.internal_id}_remote).state;

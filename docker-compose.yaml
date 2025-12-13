@@ -1,0 +1,12 @@
+services:
+  esphome:
+    image: ghcr.io/esphome/esphome:stable
+    container_name: esphome
+    volumes:
+      - ./config:/config
+    ports:
+      - "6052:6052"
+    # network_mode: "host"
+    restart: "no"
+    stdin_open: true
+    tty: true

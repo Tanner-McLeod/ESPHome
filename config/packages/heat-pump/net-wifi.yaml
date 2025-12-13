@@ -1,0 +1,11 @@
+# Enable WiFi and captive portal for provisioning
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  domain: !secret domain
+
+  ap:
+    ssid: "${area} Heat Pump"
+    password: !secret ap_fallback_password
+
+captive_portal:

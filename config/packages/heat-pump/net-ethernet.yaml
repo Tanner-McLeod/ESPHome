@@ -1,0 +1,11 @@
+# Enable Ethernet (no WiFi can be configured with Ethernet)
+ethernet:
+  type: W5500
+  mosi_pin: GPIO06
+  miso_pin: GPIO04
+  clk_pin: GPIO7
+  cs_pin: GPIO10
+  reset_pin: GPIO05
+  interrupt_pin: GPIO03
+  clock_speed: 40MHz
+  domain: !secret domain
