@@ -83,9 +83,11 @@ sensor:
     compressor_frequency:
       # Frequency in Hz of compressor (only some equipment)
       name: "Compressor Frequency"
-    outdoor_temperature:
-      # Outdoor temperature as reported by equipment
-      name: "Outdoor Temperature"
+
+    # Not available on these units, apparently
+    # outdoor_temperature:
+    #   # Outdoor temperature as reported by equipment
+    #   name: "Outdoor Temperature"
 
     # Only available if a thermostat is connected
     # thermostat_temperature:
@@ -110,10 +112,10 @@ button:
 select:
   - platform: mitsubishi_itp
     vane_position:
-      # Contols vertical vanes on supported units
+      # Controls vertical vanes on supported units
       name: "Vane Position"
     horizontal_vane_position:
-      # Contols horizontal vanes on supported units
+      # Controls horizontal vanes on supported units
       name: "H. Vane Position"
       
 light:

@@ -3,20 +3,20 @@ select:
     temperature_source:
       name: "Temperature Source"
       sources:
-      - ${source.internal_id}_heartbeat
-      - ${source.internal_id}_remote
+      - ${source.internal_id}
 
 sensor:
   - platform: homeassistant
+    internal: true
     id: "${source.internal_id}_remote"
-    name: "${source.name} (Direct)"
     entity_id: "${source.entity_id}"
     filters:
       - lambda: return ((x - 32.0) * (5.0 / 9.0));
 
   - platform: template
-    id: ${source.internal_id}_heartbeat
-    name: "${source.name} (Cached)"
+    internal: true
+    id: ${source.internal_id}
+    name: "${source.name}"
     unit_of_measurement: "°C"
     device_class: temperature
     state_class: measurement
