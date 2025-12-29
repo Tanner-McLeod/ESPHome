@@ -8,9 +8,16 @@ This repo stores and manages the ESPHome configuration for various devices in my
 - Prefer re-usable packages over duplicated YAML in device files.
 
 ## Secrets
-- All secrets must go in `config/secrets.yaml`.
+- Secrets are stored in 1Password; generate `config/secrets.yaml` from the checked-in template with `op inject -f -i config/secrets.template.yaml -o config/secrets.yaml`.
+- `config/secrets.template.yaml` contains only 1Password references and is safe to commit; never place real values there.
 - Never hardcode secrets in device YAML or packages; always reference them via `!secret ...`.
-- If you need a new secret, add a new key name and update YAML to reference it, but do not include real secret values in commits.
+- When adding a secret, add the reference key to `config/secrets.template.yaml` and store the real value in 1Password (not in git).
+
+### Device creation helper (ask permission before running)
+- Script: `scripts/create-device.sh`
+- Purpose: generates encryption/OTA secrets via 1Password, appends references to `secrets.template.yaml`, and scaffolds `config/<slug>.yaml` with substitutions.
+- Usage: `./scripts/create-device.sh [-d|--dry-run] [-f|--force] [--op <op|op.exe|path>] "<Friendly Name>"`
+- Behavior: prints planned changes first; in dry-run it shows the generated values and does not write files; otherwise prompts unless `--force` is set, then writes template + device file and updates 1Password.
 
 ## Required security settings (per device)
 Every device must have:

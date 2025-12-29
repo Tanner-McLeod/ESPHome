@@ -1,4 +1,3 @@
-/secrets.yaml
-/secrets.yaml
-/secrets/
+/secrets*
+!/secrets.template.yaml
 /.esphome/
