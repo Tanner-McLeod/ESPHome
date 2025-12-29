@@ -37,6 +37,8 @@ esp32:
       CONFIG_ESP_TASK_WDT_TIMEOUT_S: "10"
 
 api:
+  encryption:
+    key: !secret garage-door_encryption_key
   # reboot_timeout: 0s
   # Only enable BLE tracking when wifi is up and api is connected
   # Gives single-core ESP32-C3 devices time to manage wifi and authenticate with api
@@ -54,6 +56,7 @@ api:
 
 ota:
   - platform: esphome
+    password: !secret garage-door_ota_password
 
 logger:
   baud_rate: 0  # 0 Enables logging, but disables serial-port logging to free CPU and memory
