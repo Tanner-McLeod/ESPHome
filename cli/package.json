@@ -1,0 +1,31 @@
+{
+  "name": "@tanner-mcleod/esphome-cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "esphome-cli": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "tsx": "tsx ./src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "cmd-ts": "0.11.0",
+    "nanospinner": "1.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.4",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
+  }
+}
