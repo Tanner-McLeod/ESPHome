@@ -136,10 +136,6 @@ text_sensor:
         return std::string("Pre-heating");
       }
 
-      if (!id(climate_sensor).has_state()) {
-        return std::string("Unknown");
-      }
-
       switch (id(climate_sensor).action) {
         case climate::CLIMATE_ACTION_OFF:
           return std::string("Off");
