@@ -50,6 +50,7 @@ uart:
 # Define mitsubishi_itp climate component
 climate:
   - platform: mitsubishi_itp
+    id: climate_sensor
     name: "Climate"
     uart_heatpump: hp_uart
     update_interval: 6s # This should be a relatively safe default, but can be adjusted if desired
@@ -61,6 +62,7 @@ binary_sensor:
   - platform: mitsubishi_itp
     defrost:
       # Reports if system is in defrost
+      id: defrost_sensor
       name: "Defrost"
     filter_status:
       # Reports if filter needs to be replaced (false = OK)
@@ -70,9 +72,11 @@ binary_sensor:
       name: "i-see Status"
     preheat:
       # Reports if system is preheating
+      id: preheat_sensor
       name: "Preheat"
     standby:
       # Reports if system is in standby
+      id: standby_sensor
       name: "Standby"
     using_internal_temperature:
       # Reports if system is using internal temperature sensor
@@ -102,6 +106,41 @@ text_sensor:
     error_code:
       # Reports diagnostic error code
       name: "Error Code"
+  - platform: template
+    name: "Status"
+    id: status
+    update_interval: 2s
+    lambda: |-
+      if (id(standby_sensor).state) {
+        return std::string("Standby");
+      }
+      if (id(defrost_sensor).state) {
+        return std::string("Defrosting");
+      }
+      if (id(preheat_sensor).state) {
+        return std::string("Pre-heating");
+      }
+
+      if (!id(climate_sensor).has_state()) {
+        return std::string("Unknown");
+      }
+
+      switch (id(climate_sensor).action) {
+        case climate::CLIMATE_ACTION_OFF:
+          return std::string("Off");
+        case climate::CLIMATE_ACTION_COOLING:
+          return std::string("Cooling");
+        case climate::CLIMATE_ACTION_HEATING:
+          return std::string("Heating");
+        case climate::CLIMATE_ACTION_DRYING:
+          return std::string("Drying");
+        case climate::CLIMATE_ACTION_IDLE:
+          return std::string("Idle");
+        case climate::CLIMATE_ACTION_FAN:
+          return std::string("Fan Only");
+        default:
+          return std::string("Other");
+      }
 
 button:
   - platform: mitsubishi_itp
