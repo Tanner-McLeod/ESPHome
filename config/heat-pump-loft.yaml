@@ -3,14 +3,24 @@ substitutions:
   area: Loft
   encryption_key: !secret loft-heat-pump_encryption_key
   ota_password: !secret loft-heat-pump_ota_password
+  sources:
+    - office_temperature
+    - nook_temperature
 
 packages:
   base: !include packages/heat-pump/base.yaml
   net: !include packages/heat-pump/net-wifi.yaml
-  temp: !include
+  office_source: !include
     file: packages/heat-pump/source-config.yaml
     vars:
       source:
-        name: "Office Sensor"
+        name: "Office"
         internal_id: office_temperature
         entity_id: sensor.loft_office_sensor_temperature
+  nook_source: !include
+    file: packages/heat-pump/source-config.yaml
+    vars:
+      source:
+        name: "Nook"
+        internal_id: nook_temperature
+        entity_id: sensor.loft_nook_sensor_temperature

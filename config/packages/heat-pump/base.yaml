@@ -3,6 +3,7 @@ substitutions:
   area: "REQUIRED"
   encryption_key: ""
   ota_password: ""
+  sources: []
 
 esphome:
   name: "${name}"
@@ -108,6 +109,19 @@ text_sensor:
       # Reports diagnostic error code
       name: "Error Code"
   - platform: template
+    name: "Actual Source"
+    update_interval: 5s
+    lambda: |-
+      if (id(using_internal_temperature_sensor).has_state() && id(using_internal_temperature_sensor).state) {
+        return std::string("Internal");
+      }
+
+      if (id(temperature_source_select).has_state()) {
+        return std::string(id(temperature_source_select).current_option());
+      }
+
+      return std::string("Unknown");
+  - platform: template
     name: "Status"
     id: status
     update_interval: 2s
@@ -150,6 +164,11 @@ button:
       name: "Filter Reset"
 
 select:
+  - platform: mitsubishi_itp
+    temperature_source:
+      id: temperature_source_select
+      name: "Temperature Source"
+      sources: ${sources}
   - platform: mitsubishi_itp
     vane_position:
       # Controls vertical vanes on supported units
