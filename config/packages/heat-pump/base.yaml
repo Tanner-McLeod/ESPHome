@@ -80,6 +80,7 @@ binary_sensor:
       name: "Standby"
     using_internal_temperature:
       # Reports if system is using internal temperature sensor
+      id: using_internal_temperature_sensor
       name: "Internal Sensor"
 
 sensor:

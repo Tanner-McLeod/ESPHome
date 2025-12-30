@@ -2,6 +2,7 @@ select:
   - platform: mitsubishi_itp
     temperature_source:
       name: "Temperature Source"
+      id: temperature_source_select
       sources:
       - ${source.internal_id}
 
@@ -23,3 +24,18 @@ sensor:
     update_interval: 5min
     lambda: |-
       return id(${source.internal_id}_remote).state;
+
+text_sensor:
+  - platform: template
+    name: "Actual Source"
+    update_interval: 5s
+    lambda: |-
+      if (id(using_internal_temperature_sensor).has_state() && id(using_internal_temperature_sensor).state) {
+        return std::string("Internal");
+      }
+
+      if (id(temperature_source_select).has_state()) {
+        return id(temperature_source_select).state;
+      }
+
+      return std::string("Unknown");
