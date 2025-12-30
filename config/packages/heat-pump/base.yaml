@@ -110,6 +110,7 @@ text_sensor:
       name: "Error Code"
   - platform: template
     name: "Actual Source"
+    icon: "mdi:home-thermometer-outline"
     update_interval: 5s
     lambda: |-
       if (id(using_internal_temperature_sensor).has_state() && id(using_internal_temperature_sensor).state) {
@@ -123,7 +124,7 @@ text_sensor:
       return std::string("Unknown");
   - platform: template
     name: "Status"
-    id: status
+    icon: "mdi:heat-pump-outline"
     update_interval: 2s
     lambda: |-
       if (id(standby_sensor).state) {
