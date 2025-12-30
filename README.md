@@ -23,6 +23,10 @@ The [create-device][] script can be used to generate a stub for a new device, al
 # Create a device:
 ./scripts/create-device.sh <Friendly Name>
 
+# Create a typed device (adds config/packages/<type>/base.yaml and uses type-scoped secrets):
+./scripts/create-device.sh "<Friendly Name>" --type "<Device Type>"
+./scripts/create-device.sh "<Friendly Name>" -t "<Device Type>"
+
 # In dry-run mode:
 ./scripts/create-device.sh "Example Device" --dry-run
 ./scripts/create-device.sh "Example Device" -d

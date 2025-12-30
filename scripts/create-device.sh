@@ -9,11 +9,24 @@ OP_SECRET_ID="el6e5q2vujlpu37glz4xhl6mkm"
 DRY_RUN=0
 FORCE=0
 OP_CMD_OVERRIDE=""
+TYPE=""
 name_parts=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -d|--dry-run)
       DRY_RUN=1
+      shift
+      ;;
+    -t|--type)
+      if [[ -z "${2-}" ]]; then
+        echo "Missing argument for --type" >&2
+        exit 1
+      fi
+      TYPE="$2"
+      shift 2
+      ;;
+    --type=*)
+      TYPE="${1#--type=}"
       shift
       ;;
     -f|--force)
@@ -33,7 +46,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --help|-h)
-      echo "Usage: $0 [-d|--dry-run] [-f|--force] [--op <op|op.exe|path>] <friendly device name>" >&2
+      echo "Usage: $0 [-d|--dry-run] [-f|--force] [-t|--type <type>] [--op <op|op.exe|path>] <friendly device name>" >&2
       exit 0
       ;;
     --*)
@@ -49,23 +62,62 @@ done
 
 # Parse and validate name
 if [[ ${#name_parts[@]} -eq 0 ]]; then
-  echo "Usage: $0 [--dry-run] [-f|--force] [--op <op|op.exe|path>] <friendly device name>" >&2
+  echo "Usage: $0 [--dry-run] [-f|--force] [-t|--type <type>] [--op <op|op.exe|path>] <friendly device name>" >&2
   exit 1
 fi
-friendly_name="$(echo "${name_parts[*]}" | sed -e 's/^ *//' -e 's/ *$//')"
-if [[ -z "${friendly_name}" ]]; then
+device_name="$(echo "${name_parts[*]}" | sed -e 's/^ *//' -e 's/ *$//')"
+if [[ -z "${device_name}" ]]; then
   echo "Friendly name cannot be empty" >&2
   exit 1
 fi
-if [[ ! "${friendly_name}" =~ ^[A-Za-z][A-Za-z0-9\ ]*$ ]]; then
+if [[ ! "${device_name}" =~ ^[A-Za-z][A-Za-z0-9\ ]*$ ]]; then
   echo "Friendly name must start with a letter and contain only letters, numbers, and spaces" >&2
   exit 1
 fi
+device_slug="$(echo "${device_name}" | tr '[:upper:]' '[:lower:]' | sed -e 's/^ *//' -e 's/ *$//' -e 's/ \+/-/g')"
 
-# Parse and validate slug
-slug="$(echo "${friendly_name}" | tr '[:upper:]' '[:lower:]' | sed -e 's/^ *//' -e 's/ *$//' -e 's/ \+/-/g')"
-if [[ ! "${slug}" =~ ^[a-z][a-z0-9-]*$ ]]; then
-  echo "Derived device key '${slug}' is not valid" >&2
+# Parse and validate type (if provided)
+type_slug=""
+type_name=""
+if [[ -n "${TYPE}" ]]; then
+  type_name="$(echo "${TYPE}" | sed -e 's/^ *//' -e 's/ *$//')"
+  if [[ -z "${type_name}" ]]; then
+    echo "Type name cannot be empty" >&2
+    exit 1
+  fi
+  if [[ ! "${type_name}" =~ ^[A-Za-z][A-Za-z0-9\ ]*$ ]]; then
+    echo "Type name must start with a letter and contain only letters, numbers, and spaces" >&2
+    exit 1
+  fi
+  type_slug="$(echo "${type_name}" | tr '[:upper:]' '[:lower:]' | sed -e 's/^ *//' -e 's/ *$//' -e 's/ \+/-/g')"
+  if [[ ! "${type_slug}" =~ ^[a-z][a-z0-9-]*$ ]]; then
+    echo "Derived type slug '${type_slug}' is not valid" >&2
+    exit 1
+  fi
+fi
+
+# Derive slugs and labels.
+if [[ -n "${type_slug}" ]]; then
+  config_name="${device_slug}-${type_slug}"
+  config_friendly_name="${device_name} ${type_name}"
+  config_file_slug="${type_slug}-${device_slug}"
+  secret_section_slug="${type_slug}"
+  secret_section_name="${type_name}"
+else
+  config_name="${device_slug}"
+  config_friendly_name="${device_name}"
+  config_file_slug="${device_slug}"
+  secret_section_slug="${device_slug}"
+  secret_section_name="${device_name}"
+fi
+
+# Validate the slugs
+if [[ ! "${config_name}" =~ ^[a-z][a-z0-9-]*$ ]]; then
+  echo "Derived name '${config_name}' is not valid" >&2
+  exit 1
+fi
+if [[ ! "${config_file_slug}" =~ ^[a-z][a-z0-9-]*$ ]]; then
+  echo "Derived name '${config_file_slug}' is not valid" >&2
   exit 1
 fi
 
@@ -109,20 +161,30 @@ if [[ ! -d "${CONFIG_DIR}" ]]; then
 fi
 
 # Derive keys and references.
-yaml_key_encryption="${slug}_encryption_key"
-yaml_key_ota="${slug}_ota_password"
-op_ref_encryption="op://${OP_SECRET_ID}/${friendly_name}/encryption key"
-op_ref_ota="op://${OP_SECRET_ID}/${friendly_name}/ota password"
-device_config="${CONFIG_DIR}/${slug}.yaml"
+yaml_key_encryption="${secret_section_slug}_encryption_key"
+yaml_key_ota="${secret_section_slug}_ota_password"
+op_ref_encryption="op://${OP_SECRET_ID}/${secret_section_name}/encryption key"
+op_ref_ota="op://${OP_SECRET_ID}/${secret_section_name}/ota password"
+device_config="${CONFIG_DIR}/${config_file_slug}.yaml"
+base_package_dir=""
+base_package_path=""
+if [[ -n "${type_slug}" ]]; then
+  base_package_dir="${CONFIG_DIR}/packages/${type_slug}"
+  base_package_path="${base_package_dir}/base.yaml"
+fi
 
 # Prevent overwriting data in files
 echo "Checking files..."
 if grep -Eq "^${yaml_key_encryption}:" "${TEMPLATE_PATH}" || grep -Eq "^${yaml_key_ota}:" "${TEMPLATE_PATH}"; then
-  echo "Secrets for '${slug}' already exist in ${TEMPLATE_PATH}; aborting." >&2
+  echo "Secrets for '${secret_section_slug}' already exist in ${TEMPLATE_PATH}; aborting." >&2
   exit 1
 fi
 if [[ -e "${device_config}" ]]; then
   echo "Device config already exists: ${device_config}; aborting." >&2
+  exit 1
+fi
+if [[ -n "${type_slug}" && -e "${base_package_dir}" ]]; then
+  echo "Package directory already exists: ${base_package_dir}; aborting." >&2
   exit 1
 fi
 
@@ -133,31 +195,69 @@ if ! "${OP_CMD}" account get >/dev/null 2>&1; then
   echo "1Password CLI is locked or not authenticated; please sign in/unlock and try again." >&2
   exit 1
 fi
-if "${OP_CMD}" item get "${OP_SECRET_ID}" --field "${friendly_name}.encryption key" >/dev/null 2>&1 || \
-  "${OP_CMD}" item get "${OP_SECRET_ID}" --field "${friendly_name}.ota password" >/dev/null 2>&1; then
-  echo "Secrets for '${friendly_name}' already exist in 1Password; aborting." >&2
+if "${OP_CMD}" item get "${OP_SECRET_ID}" --field "${secret_section_name}.encryption key" >/dev/null 2>&1 || \
+  "${OP_CMD}" item get "${OP_SECRET_ID}" --field "${secret_section_name}.ota password" >/dev/null 2>&1; then
+  echo "Secrets for '${secret_section_name}' already exist in 1Password; aborting." >&2
   exit 1
 fi
 
 # Generate content for secrets template
 echo "Generating content..."
 template_block=$(cat <<EOF
-# ${friendly_name}
+# ${secret_section_name}
 ${yaml_key_encryption}: "${op_ref_encryption}"
 ${yaml_key_ota}: "${op_ref_ota}"
 EOF
 )
 
 # Generate content for the device file
-device_block=$(cat <<EOF
+device_base_block=$(cat <<EOF
 substitutions:
-  name: ${slug}
-  encryption_key: !secret ${yaml_key_encryption}
-  ota_password: !secret ${yaml_key_ota}
-
-packages: []
+  name: ${config_name}
+  friendly_name: ${config_friendly_name}
 EOF
 )
+
+api_ota_block=$(cat <<EOF
+api:
+  encryption:
+    key: !secret ${yaml_key_encryption}
+
+ota:
+  - platform: esphome
+    password: !secret ${yaml_key_ota}
+EOF
+)
+
+if [[ -n "${type_slug}" ]]; then
+  device_block=$(cat <<EOF
+${device_base_block}
+
+packages:
+  ${type_slug}_base: !include packages/${type_slug}/base.yaml
+EOF
+)
+else
+  device_block=$(cat <<EOF
+${device_base_block}
+
+${api_ota_block}
+EOF
+)
+fi
+
+
+# Generate content for the type base package (if requested)
+package_block=""
+if [[ -n "${type_slug}" ]]; then
+  package_block=$(cat <<EOF
+substitutions:
+  name: "REQUIRED"
+
+${api_ota_block}
+EOF
+)
+fi
 
 # Generate secrets
 encryption_key="$(openssl rand -base64 32)"
@@ -170,12 +270,17 @@ echo ""
 echo "+++ secrets.template.yaml"
 echo "${template_block}"
 echo ""
-echo "+++ config/${slug}.yaml"
+echo "+++ config/${config_file_slug}.yaml"
 echo "${device_block}"
 echo ""
+if [[ -n "${type_slug}" ]]; then
+  echo "+++ config/packages/${type_slug}/base.yaml"
+  echo "${package_block}"
+  echo ""
+fi
 echo "+++ 1Password Secrets"
-echo "- ${op_ref_encryption}"
-echo "- ${op_ref_ota}"
+echo "- \"${op_ref_encryption}\""
+echo "- \"${op_ref_ota}\""
 echo ""
 
 if [[ "${DRY_RUN}" -eq 1 ]]; then
@@ -192,10 +297,14 @@ echo ""
 # Apply the changes
 if [[ "${DRY_RUN}" -eq 0 ]]; then
   "${OP_CMD}" item edit "${OP_SECRET_ID}" \
-    "${friendly_name}.encryption key=${encryption_key}" \
-    "${friendly_name}.ota password=${ota_password}"
+    "${secret_section_name}.encryption key=${encryption_key}" \
+    "${secret_section_name}.ota password=${ota_password}"
   echo -e "\n${template_block}" >> "${TEMPLATE_PATH}"
   cat >"${device_config}" <<< "${device_block}"
+  if [[ -n "${type_slug}" ]]; then
+    mkdir -p "${base_package_dir}"
+    cat >"${base_package_path}" <<< "${package_block}"
+  fi
 fi
 
 # Emit a summary of all changes.
@@ -210,8 +319,9 @@ else
 fi
 cat <<EOF
 === ${result_label} ===
-Generated device '${friendly_name}' (${slug}):
-- Device config: ./config/${slug}.yaml
+Generated device '${device_name}' (${config_friendly_name}):
+- Device config: ./config/${config_file_slug}.yaml
+- Base package: ${base_package_path:-[none]}
 - Encryption Key:
   - Secret ID: ${yaml_key_encryption}
   - Reference: "${op_ref_encryption}"
