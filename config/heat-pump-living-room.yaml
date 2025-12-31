@@ -7,5 +7,4 @@ substitutions:
 packages:
   base: !include packages/heat-pump/base.yaml
   net: !include packages/heat-pump/net-wifi.yaml
-  source: !include packages/heat-pump/source-internal.yaml
 
