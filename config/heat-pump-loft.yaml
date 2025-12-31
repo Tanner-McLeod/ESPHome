@@ -4,12 +4,20 @@ substitutions:
   encryption_key: !secret loft-heat-pump_encryption_key
   ota_password: !secret loft-heat-pump_ota_password
   sources:
+    - average_temperature
     - office_temperature
     - nook_temperature
 
 packages:
   base: !include packages/heat-pump/base.yaml
   net: !include packages/heat-pump/net-wifi.yaml
+  average_source: !include
+    file: packages/heat-pump/source-config.yaml
+    vars:
+      source:
+        name: "Loft Average"
+        internal_id: average_temperature
+        entity_id: sensor.loft_average_temperature
   office_source: !include
     file: packages/heat-pump/source-config.yaml
     vars:
