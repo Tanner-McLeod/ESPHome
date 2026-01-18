@@ -25,16 +25,23 @@ esphome:
   name: "${name}"
   friendly_name: "${friendly_name}"
 
+external_components:
+  - source: github://emporia-vue-local/esphome@dev
+    components:
+      - emporia_vue
+
 esp32:
   board: esp32dev
   framework:
     type: esp-idf
     version: recommended
 
-external_components:
-  - source: github://emporia-vue-local/esphome@dev
-    components:
-      - emporia_vue
+logger:
+  level: DEBUG
+  logs:
+    # by default, every reading will be printed to the UART, which is very slow
+    # This will disable printing the readings but keep other helpful messages
+    sensor: INFO
 
 api:
   encryption:
@@ -49,12 +56,14 @@ wifi:
   password: !secret wifi_password
   domain: !secret domain
   ap:
-    ssid: "${friendly_name}"
+    ssid: "${friendly_name} Fallback"
     password: !secret ap_fallback_password
   on_connect:
     - light.turn_on: wifi_led
   on_disconnect:
     - light.turn_off: wifi_led
+
+captive_portal:
 
 # Enable Ethernet by uncommenting the following:
 #ethernet:
@@ -67,25 +76,29 @@ wifi:
 #  on_disconnect:
 #    - light.turn_off: ethernet_led
 
-logger:
-  logs:
-    # by default, every reading will be printed to the UART, which is very slow
-    # This will disable printing the readings but keep other helpful messages
-    sensor: INFO
+preferences:
+  # Avoid wearing out the flash lifespan with rapidly-updating sensor data!
+  # Make sure `restore: false` is set on all `platform: total_daily_energy` sensors below.
+  flash_write_interval: "48h"
 
 # Use HA for setting RTC
 time:
   - platform: homeassistant
 
+i2c:
+  sda:
+    number: 5
+    ignore_strapping_warning: true
+  scl: 18
+  scan: false
+  frequency: 400kHz
+  timeout: 1ms
+  id: i2c_a
+
 # Allow HA to restart the monitor remotely
 switch:
   - platform: restart
     name: Restart
-
-preferences:
-  # avoid wearing out the flash lifespan with rapidly-updating sensor data!
-  # please also make sure `restore: false` is set on all `platform: total_daily_energy` sensors below.
-  flash_write_interval: "48h"
 
 light:
   - platform: status_led
@@ -97,17 +110,8 @@ light:
   - platform: status_led
     id: ethernet_led
     pin: 4
-    restore_mode: ALWAYS_OFF
+    restore_mode: ALWAYS_ON
 
-i2c:
-  sda:
-    number: 5
-    ignore_strapping_warning: true
-  scl: 18
-  scan: false
-  frequency: 400kHz
-  timeout: 1ms
-  id: i2c_a
 
 # Define re-useable filters
 .filters:
