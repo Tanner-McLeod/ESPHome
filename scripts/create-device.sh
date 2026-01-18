@@ -4,6 +4,7 @@ shopt -s expand_aliases
 
 # Constants
 OP_SECRET_ID="el6e5q2vujlpu37glz4xhl6mkm"
+OP_SECRET_REF="Home Lab/ESPHome Secrets"
 
 # Parse arguments
 DRY_RUN=0
@@ -163,8 +164,8 @@ fi
 # Derive keys and references.
 yaml_key_encryption="${secret_section_slug}_encryption_key"
 yaml_key_ota="${secret_section_slug}_ota_password"
-op_ref_encryption="op://${OP_SECRET_ID}/${secret_section_name}/encryption key"
-op_ref_ota="op://${OP_SECRET_ID}/${secret_section_name}/ota password"
+op_ref_encryption="op://${OP_SECRET_REF}/${secret_section_name}/encryption key"
+op_ref_ota="op://${OP_SECRET_REF}/${secret_section_name}/ota password"
 device_config="${CONFIG_DIR}/${config_file_slug}.yaml"
 base_package_dir=""
 base_package_path=""

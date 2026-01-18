@@ -7,7 +7,7 @@ Configuration and tools for ESPHome devices Casa de Tanner-McLeod.
 
 Real secrets live in 1Password and must be injected. [secrets template][] is used to generate `config/secrets.yaml`: 
 ```bash
-op inject -f -i config/secrets.template.yaml -o config/secrets.yaml
+op inject -f -i secrets.template.yaml -o config/secrets.yaml
 ```
 
 > [!IMPORTANT]
