@@ -14,9 +14,6 @@ sensor:
       # The heat pump needs a value, in Celsius.
       - lambda: return ((x - 32.0) * (5.0 / 9.0));
       # If it doesn't get one every ~6 minutes, it'll switch back to the internal sensor.
-      - timeout: ${source.timeout | default('30min')} # If no value is received from HA for a while, go to NaN.
-      - heartbeat: # Re-send the last value at least every 5 minutes.
-          period: 5min
-          optimistic: true
+      - timeout: '30min' # If no value is received from HA for a while, go to NaN.
 
 # See ./README.md for sensor configuration.

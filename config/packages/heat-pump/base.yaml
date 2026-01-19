@@ -9,10 +9,9 @@ esphome:
   name: "${name}"
   friendly_name: "${area} Heat Pump"
   area: "${area}"
-
   project:
-    name: "tinwer.mahtanarm"
-    version: "1.4"
+    name: "tanner-mcleod.heat-pumps"
+    version: "1.0.0"
 
 esp32:
   board: esp32-c3-devkitc-02
@@ -165,6 +164,8 @@ select:
     temperature_source:
       id: temperature_source_select
       name: "Temperature Source"
+      echo_interval: 5min
+      timeout: 30min
       sources: ${sources}
   - platform: mitsubishi_itp
     vane_position:
