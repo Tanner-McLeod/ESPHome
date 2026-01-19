@@ -3,8 +3,17 @@ substitutions:
   area: Living Room
   encryption_key: !secret living-room-heat-pump_encryption_key
   ota_password: !secret living-room-heat-pump_ota_password
+  sources:
+    - external_temperature
 
 packages:
   base: !include packages/heat-pump/base.yaml
   net: !include packages/heat-pump/net-wifi.yaml
+  external_temperature: !include
+    file: packages/heat-pump/source-config.yaml
+    vars:
+      source:
+        name: "Living Room"
+        internal_id: external_temperature
+        entity_id: sensor.living_room_sensor_temperature
 
