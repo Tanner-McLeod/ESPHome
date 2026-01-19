@@ -3,14 +3,14 @@ substitutions:
   friendly_name: Emporia Vue
   leg_1: "Phase A"
   leg_2: "Phase B"
-  cir_1: "Circuit 1"
-  cir_2: "Circuit 2"
-  cir_3: "Circuit 3"
-  cir_4: "Circuit 4"
-  cir_5: "Circuit 5"
-  cir_6: "Circuit 6"
-  cir_7: "Circuit 7"
-  cir_8: "Circuit 8"
+  cir_1: "Main Heat Pump - Phase A"
+  cir_2: "Main Heat Pump - Phase B"
+  cir_3: "Loft Heat Pump"
+  cir_4: "Range - Phase A"
+  cir_5: "Range - Phase B"
+  cir_6: "Well Pump"
+  cir_7: "Water Treatment"
+  cir_8: "Loft Outlets"
   cir_9: "Circuit 9"
   cir_10: "Circuit 10"
   cir_11: "Circuit 11"
@@ -19,7 +19,7 @@ substitutions:
   cir_14: "Circuit 14"
   cir_15: "Circuit 15"
   cir_16: "Circuit 16"
-  xtra: "Untracked"  # displaying leftover/unmonitored energy (total minus circs 1–16)
+  xtra: "Other Circuits"  # displaying leftover/unmonitored energy (total minus circs 1–16)
 
 esphome:
   name: "${name}"
@@ -173,14 +173,14 @@ sensor:
           device_class: power
           filters: [*pos]
       # Pay close attention to set the `phase_id` for each breaker by matching it to the phase/leg it connects to in the panel
-      # - { phase_id: phase_a, input:  "1", power: { id:  cir1, filters: [ *neg, multiply: 2 ] } }
-      # - { phase_id: phase_a, input:  "2", power: { id:  cir2, filters: [ *neg, multiply: 2 ] } }
-      # - { phase_id: phase_a, input:  "3", power: { id:  cir3, filters: [ *neg ] } }
-      # - { phase_id: phase_b, input:  "4", power: { id:  cir4, filters: [ *neg ] } }
-      # - { phase_id: phase_a, input:  "5", power: { id:  cir5, filters: [ *neg ] } }
-      # - { phase_id: phase_b, input:  "6", power: { id:  cir6, filters: [ *neg ] } }
-      # - { phase_id: phase_a, input:  "7", power: { id:  cir7, filters: [ *neg ] } }
-      # - { phase_id: phase_b, input:  "8", power: { id:  cir8, filters: [ *neg ] } }
+      - { phase_id: phase_a, input:  "1", power: { id:  cir1, filters: [ *neg ] } }
+      - { phase_id: phase_b, input:  "2", power: { id:  cir2, filters: [ *neg ] } }
+      - { phase_id: phase_b, input:  "3", power: { id:  cir3, filters: [ *neg, multiply: 2 ] } }
+      - { phase_id: phase_a, input:  "4", power: { id:  cir4, filters: [ *neg ] } }
+      - { phase_id: phase_b, input:  "5", power: { id:  cir5, filters: [ *neg ] } }
+      - { phase_id: phase_a, input:  "6", power: { id:  cir6, filters: [ *neg, multiply: 2 ] } }
+      - { phase_id: phase_b, input:  "7", power: { id:  cir7, filters: [ *neg ] } }
+      - { phase_id: phase_b, input:  "8", power: { id:  cir8, filters: [ *neg ] } }
       # - { phase_id: phase_a, input:  "9", power: { id:  cir9, filters: [ *neg ] } }
       # - { phase_id: phase_b, input: "10", power: { id: cir10, filters: [ *neg ] } }
       # - { phase_id: phase_a, input: "11", power: { id: cir11, filters: [ *neg ] } }
@@ -192,21 +192,21 @@ sensor:
     on_update:
       then:
         - component.update: total_power
-        # - component.update: balance_power
+        - component.update: balance_power
 
-  # these `copy` sensors filter and send the power state to HA
+  # Power stats (throttled average) per circuit
   - { platform: copy, name: "${leg_1} Power", source_id: phase_a_power, filters: *throttle_avg }
   - { platform: copy, name: "${leg_2} Power", source_id: phase_b_power, filters: *throttle_avg }
   - { platform: copy, name: "Total Power", source_id: total_power, filters: *throttle_avg }
-  # - { platform: copy, name: "${xtra} Power", source_id: balance_power, filters: *throttle_avg }
-  # - { platform: copy, name:  "${cir_1} Power", source_id:  cir1, filters: *throttle_avg }
-  # - { platform: copy, name:  "${cir_2} Power", source_id:  cir2, filters: *throttle_avg }
-  # - { platform: copy, name:  "${cir_3} Power", source_id:  cir3, filters: *throttle_avg }
-  # - { platform: copy, name:  "${cir_4} Power", source_id:  cir4, filters: *throttle_avg }
-  # - { platform: copy, name:  "${cir_5} Power", source_id:  cir5, filters: *throttle_avg }
-  # - { platform: copy, name:  "${cir_6} Power", source_id:  cir6, filters: *throttle_avg }
-  # - { platform: copy, name:  "${cir_7} Power", source_id:  cir7, filters: *throttle_avg }
-  # - { platform: copy, name:  "${cir_8} Power", source_id:  cir8, filters: *throttle_avg }
+  - { platform: copy, name: "${xtra} Power", source_id: balance_power, filters: *throttle_avg }
+  - { platform: copy, name:  "${cir_1} Power", source_id:  cir1, filters: *throttle_avg }
+  - { platform: copy, name:  "${cir_2} Power", source_id:  cir2, filters: *throttle_avg }
+  - { platform: copy, name:  "${cir_3} Power", source_id:  cir3, filters: *throttle_avg }
+  - { platform: copy, name:  "${cir_4} Power", source_id:  cir4, filters: *throttle_avg }
+  - { platform: copy, name:  "${cir_5} Power", source_id:  cir5, filters: *throttle_avg }
+  - { platform: copy, name:  "${cir_6} Power", source_id:  cir6, filters: *throttle_avg }
+  - { platform: copy, name:  "${cir_7} Power", source_id:  cir7, filters: *throttle_avg }
+  - { platform: copy, name:  "${cir_8} Power", source_id:  cir8, filters: *throttle_avg }
   # - { platform: copy, name:  "${cir_9} Power", source_id:  cir9, filters: *throttle_avg }
   # - { platform: copy, name: "${cir_10} Power", source_id: cir10, filters: *throttle_avg }
   # - { platform: copy, name: "${cir_11} Power", source_id: cir11, filters: *throttle_avg }
@@ -215,7 +215,77 @@ sensor:
   # - { platform: copy, name: "${cir_14} Power", source_id: cir14, filters: *throttle_avg }
   # - { platform: copy, name: "${cir_15} Power", source_id: cir15, filters: *throttle_avg }
   # - { platform: copy, name: "${cir_16} Power", source_id: cir16, filters: *throttle_avg }
+  
+  # Total energy per circuit
+  - { power_id:  cir1, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_1} Daily Energy", filters: *throttle_time }
+  - { power_id:  cir2, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_2} Daily Energy", filters: *throttle_time }
+  - { power_id:  cir3, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_3} Daily Energy", filters: *throttle_time }
+  - { power_id:  cir4, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_4} Daily Energy", filters: *throttle_time }
+  - { power_id:  cir5, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_5} Daily Energy", filters: *throttle_time }
+  - { power_id:  cir6, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_6} Daily Energy", filters: *throttle_time }
+  - { power_id:  cir7, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_7} Daily Energy", filters: *throttle_time }
+  - { power_id:  cir8, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_8} Daily Energy", filters: *throttle_time }
+  # - { power_id:  cir9, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_9} Daily Energy", filters: *throttle_time }
+  # - { power_id: cir10, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_10} Daily Energy", filters: *throttle_time }
+  # - { power_id: cir11, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_11} Daily Energy", filters: *throttle_time }
+  # - { power_id: cir12, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_12} Daily Energy", filters: *throttle_time }
+  # - { power_id: cir13, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_13} Daily Energy", filters: *throttle_time }
+  # - { power_id: cir14, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_14} Daily Energy", filters: *throttle_time }
+  # - { power_id: cir15, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_15} Daily Energy", filters: *throttle_time }
+  # - { power_id: cir16, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_16} Daily Energy", filters: *throttle_time }
 
+  # Double-pole, 240V circuits.
+  - platform: combination
+    type: sum
+    id: main_heat_pump_power
+    name: "Main Heat Pump Power"
+    sources:
+      - source: cir1
+      - source: cir2
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+    filters: *throttle_avg
+  - platform: template
+    name: "Main Heat Pump Power Variance"
+    lambda: return id(cir1).state - id(cir2).state;
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: "W"
+    filters: *throttle_avg
+  - platform: total_daily_energy
+    name: "Main Heat Pump Daily Energy"
+    power_id: main_heat_pump_power
+    accuracy_decimals: 0
+    restore: false
+    filters: *throttle_time
+    
+  - platform: combination
+    type: sum
+    id: range_power
+    name: "Range Power"
+    sources:
+      - source: cir4
+      - source: cir5
+    unit_of_measurement: "W"
+    device_class: power
+    state_class: measurement
+    filters: *throttle_avg
+  - platform: template
+    name: "Range Power Variance"
+    lambda: return id(cir4).state - id(cir5).state;
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: "W"
+    filters: *throttle_avg
+  - platform: total_daily_energy
+    name: "Range Daily Energy"
+    power_id: range_power
+    accuracy_decimals: 0
+    restore: false
+    filters: *throttle_time
+
+  # Total power stats
   - platform: template
     lambda: return id(phase_a_power).state + id(phase_b_power).state;
     update_interval: never   # will be updated after all power sensors update via on_update trigger
@@ -230,50 +300,34 @@ sensor:
     restore: false
     filters: *throttle_time
   
-  # - platform: template
-  #   lambda: !lambda |-
-  #     return max(0.0f, id(total_power).state -
-  #       id( cir1).state -
-  #       id( cir2).state -
-  #       id( cir3).state -
-  #       id( cir4).state -
-  #       id( cir5).state -
-  #       id( cir6).state -
-  #       id( cir7).state -
-  #       id( cir8).state -
-  #       id( cir9).state -
-  #       id(cir10).state -
-  #       id(cir11).state -
-  #       id(cir12).state -
-  #       id(cir13).state -
-  #       id(cir14).state -
-  #       id(cir15).state -
-  #       id(cir16).state);
-  #   update_interval: never   # still happens, but via `on_update` trigger (*after* all power sensors update)
-  #   id: balance_power
-  #   device_class: power
-  #   state_class: measurement
-  #   unit_of_measurement: "W"
-  # - platform: total_daily_energy
-  #   name: "${xtra} Daily Energy"
-  #   power_id: balance_power
-  #   accuracy_decimals: 0
-  #   restore: false
-  #   filters: *throttle_time
-  
-  # - { power_id:  cir1, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_1} Daily Energy", filters: *throttle_time }
-  # - { power_id:  cir2, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_2} Daily Energy", filters: *throttle_time }
-  # - { power_id:  cir3, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_3} Daily Energy", filters: *throttle_time }
-  # - { power_id:  cir4, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_4} Daily Energy", filters: *throttle_time }
-  # - { power_id:  cir5, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_5} Daily Energy", filters: *throttle_time }
-  # - { power_id:  cir6, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_6} Daily Energy", filters: *throttle_time }
-  # - { power_id:  cir7, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_7} Daily Energy", filters: *throttle_time }
-  # - { power_id:  cir8, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_8} Daily Energy", filters: *throttle_time }
-  # - { power_id:  cir9, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name:  "${cir_9} Daily Energy", filters: *throttle_time }
-  # - { power_id: cir10, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_10} Daily Energy", filters: *throttle_time }
-  # - { power_id: cir11, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_11} Daily Energy", filters: *throttle_time }
-  # - { power_id: cir12, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_12} Daily Energy", filters: *throttle_time }
-  # - { power_id: cir13, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_13} Daily Energy", filters: *throttle_time }
-  # - { power_id: cir14, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_14} Daily Energy", filters: *throttle_time }
-  # - { power_id: cir15, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_15} Daily Energy", filters: *throttle_time }
-  # - { power_id: cir16, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_16} Daily Energy", filters: *throttle_time }
+  # Balance (remaining) power stats
+  - platform: template
+    id: balance_power
+    lambda: !lambda |-
+      return max(0.0f, id(total_power).state -
+        id( cir1).state -
+        id( cir2).state -
+        id( cir3).state -
+        id( cir4).state -
+        id( cir5).state -
+        id( cir6).state -
+        id( cir7).state -
+        id( cir8).state);
+        // id( cir9).state -
+        // id(cir10).state -
+        // id(cir11).state -
+        // id(cir12).state -
+        // id(cir13).state -
+        // id(cir14).state -
+        // id(cir15).state -
+        // id(cir16).state);
+    update_interval: never   # still happens, but via `on_update` trigger (*after* all power sensors update)
+    device_class: power
+    state_class: measurement
+    unit_of_measurement: "W"
+  - platform: total_daily_energy
+    name: "${xtra} Daily Energy"
+    power_id: balance_power
+    accuracy_decimals: 0
+    restore: false
+    filters: *throttle_time
