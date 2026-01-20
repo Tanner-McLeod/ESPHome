@@ -3,7 +3,9 @@
         "esphome",
         "heatpump",
         "homeassistant",
+        "mdio",
         "SNZB",
-        "Sonoff"
+        "Sonoff",
+        "UART"
     ]
 }

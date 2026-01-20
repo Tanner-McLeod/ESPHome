@@ -190,23 +190,42 @@ sensor:
     on_update:
       then:
         - component.update: total_power
+        - component.update: main_heat_pump_power
+        - component.update: main_heat_pump_power_variance
+        - component.update: range_power
+        - component.update: range_power_variance
 
   # Double-pole, 240V circuits.
-  - platform: combination
-    type: sum
+  - platform: template
     id: main_heat_pump_power
-    sources:
-      - source: cir1
-      - source: cir2
+    lambda: return id(cir1).state + id(cir2).state;
+    update_interval: never # updated after ct_clamps
     unit_of_measurement: "W"
     device_class: power
     state_class: measurement
   - platform: template
-    name: "Main Heat Pump Power Variance"
+    id: main_heat_pump_power_variance
     lambda: return id(cir1).state - id(cir2).state;
+    update_interval: never # updated after ct_clamps
     device_class: power
     state_class: measurement
     unit_of_measurement: "W"
+  - platform: copy
+    name: "Main Heat Pump Power Variance"
+    source_id:  main_heat_pump_power_variance
+    filters: *throttle_avg
+  - platform: template
+    name: "Main Heat Pump Power Variance Percentage"
+    lambda: |-
+      if (!id(main_heat_pump_power).has_state() || !id(main_heat_pump_power_variance).has_state()) {
+        return NAN;
+      }
+      const float total = id(main_heat_pump_power).state;
+      const float variance = id(main_heat_pump_power_variance).state;
+      return  total == 0.0f ? total : (variance / total) * 100.0f;
+    state_class: measurement
+    unit_of_measurement: '%'
+    accuracy_decimals: 1
     filters: *throttle_avg
   - platform: total_daily_energy
     name: "Main Heat Pump Daily Energy"
@@ -214,27 +233,56 @@ sensor:
     accuracy_decimals: 0
     restore: false
     filters: *throttle_time
-    
-  - platform: combination
-    type: sum
+  - platform: total_daily_energy
+    name: "Main Heat Pump Energy Variance"
+    power_id: main_heat_pump_power_variance
+    accuracy_decimals: 0
+    state_class: total
+    restore: false
+    filters: *throttle_time
+
+  - platform: template
     id: range_power
-    sources:
-      - source: cir4
-      - source: cir5
+    lambda: return id(cir4).state + id(cir5).state;
+    update_interval: never # updated after ct_clamps
     unit_of_measurement: "W"
     device_class: power
     state_class: measurement
   - platform: template
-    name: "Range Power Variance"
+    id: range_power_variance
     lambda: return id(cir4).state - id(cir5).state;
+    update_interval: never # updated after ct_clamps
     device_class: power
     state_class: measurement
     unit_of_measurement: "W"
+  - platform: copy
+    name: "Range Power Variance"
+    source_id:  range_power_variance
+    filters: *throttle_avg
+  - platform: template
+    name: "Range Power Variance Percentage"
+    lambda: |-
+      if (!id(range_power).has_state() || !id(range_power_variance).has_state()) {
+        return NAN;
+      }
+      const float total = id(range_power).state;
+      const float variance = id(range_power_variance).state;
+      return  total == 0.0f ? total : (variance / total) * 100.0f;
+    state_class: measurement
+    unit_of_measurement: '%'
+    accuracy_decimals: 1
     filters: *throttle_avg
   - platform: total_daily_energy
     name: "Range Daily Energy"
     power_id: range_power
     accuracy_decimals: 0
+    restore: false
+    filters: *throttle_time
+  - platform: total_daily_energy
+    name: "Range Energy Variance"
+    power_id: range_power_variance
+    accuracy_decimals: 0
+    state_class: total
     restore: false
     filters: *throttle_time
 
@@ -293,4 +341,3 @@ sensor:
   # - { power_id: cir14, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_14} Daily Energy", filters: *throttle_time }
   # - { power_id: cir15, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_15} Daily Energy", filters: *throttle_time }
   # - { power_id: cir16, platform: total_daily_energy, accuracy_decimals: 0, restore: false, name: "${cir_16} Daily Energy", filters: *throttle_time }
-
