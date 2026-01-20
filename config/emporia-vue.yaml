@@ -234,7 +234,7 @@ sensor:
     restore: false
     filters: *throttle_time
   - platform: total_daily_energy
-    name: "Main Heat Pump Energy Variance"
+    name: "Main Heat Pump Daily Energy Variance"
     power_id: main_heat_pump_power_variance
     accuracy_decimals: 0
     state_class: total
@@ -279,7 +279,7 @@ sensor:
     restore: false
     filters: *throttle_time
   - platform: total_daily_energy
-    name: "Range Energy Variance"
+    name: "Range Daily Energy Variance"
     power_id: range_power_variance
     accuracy_decimals: 0
     state_class: total
