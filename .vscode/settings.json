@@ -1,9 +1,11 @@
 {
     "cSpell.words": [
+        "acked",
         "esphome",
         "heatpump",
         "homeassistant",
         "mdio",
+        "pullup",
         "SNZB",
         "Sonoff",
         "UART"

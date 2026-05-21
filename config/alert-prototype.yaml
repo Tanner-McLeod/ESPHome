@@ -1,0 +1,100 @@
+substitutions:
+  name: alert-prototype
+  friendly_name: Alert Prototype
+
+esphome:
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+
+esp32:
+  board: seeed_xiao_esp32s3
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+  batch_delay: 10ms
+  encryption:
+    key: !secret alert-prototype_encryption_key
+
+ota:
+  - platform: esphome
+    password: !secret alert-prototype_ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  domain: !secret domain
+  ap:
+    ssid: "${friendly_name} Fallback"
+    password: !secret ap_fallback_password
+  on_connect:
+    - output.turn_on: onboard_led
+  on_disconnect:
+    - output.turn_off: onboard_led
+
+captive_portal:
+    
+output:
+  - platform: gpio
+    pin: GPIO21
+    id: onboard_led
+    inverted: true
+  - platform: gpio
+    pin: GPIO9
+    id: blue_led
+  - platform: gpio
+    pin: GPIO8
+    id: green_led
+
+binary_sensor:
+  - platform: homeassistant
+    entity_id: binary_sensor.alert_status
+    id: alert_is_active
+    on_press: 
+      then:
+        - output.turn_on: blue_led
+    on_release: 
+      then:
+        - output.turn_off: blue_led
+
+  - platform: homeassistant
+    entity_id: input_boolean.alert_acknowledged
+    id: alert_is_acked
+    on_press: 
+      then:
+        - output.turn_on: green_led
+    on_release: 
+      then:
+        - output.turn_off: green_led
+
+  - platform: gpio
+    name: Clear Button
+    pin: 
+      number: GPIO1
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      then:
+        - homeassistant.action: 
+            action: script.clear_alert
+
+  - platform: gpio
+    name: Ack Button
+    pin: 
+      number: GPIO2
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 10ms
+    on_press:
+      then:
+        - homeassistant.action: 
+            action: script.ack_alert
