@@ -3,8 +3,8 @@ set -euo pipefail
 shopt -s expand_aliases
 
 # Constants
-OP_SECRET_ID="el6e5q2vujlpu37glz4xhl6mkm"
-OP_SECRET_REF="Home Lab/ESPHome Secrets"
+OP_SECRET_ID="rhxed5ozdrpoyodqsd2yuiv6je"
+OP_SECRET_REF="bnpwx5jk7okqc7mbeki34hgrbm/ESPHome Secrets"
 
 # Parse arguments
 DRY_RUN=0
